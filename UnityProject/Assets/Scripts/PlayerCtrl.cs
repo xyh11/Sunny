@@ -16,7 +16,7 @@ public class PlayerCtrl : MonoBehaviour
     private int gems = 0;
     private Rigidbody2D rb;
     private Animator anim;
-
+    private bool isHurt = false;
 
 
     private void Start()
@@ -35,9 +35,11 @@ public class PlayerCtrl : MonoBehaviour
 
     private void Update()
     {
-        Move();
+        if (!isHurt)
+        {
+            Move();
+        }
         SwitchAnim();
-
     }
 
     /// <summary>
@@ -73,7 +75,16 @@ public class PlayerCtrl : MonoBehaviour
     /// </summary>
     void SwitchAnim()
     {
+        //Debug.LogWarning(Mathf.Abs(rb.velocity.x));
+        //Debug.LogWarning(anim.GetBool("ilde"));
+
+
         anim.SetBool("idle", false);
+        //下落
+        if (rb.velocity.y < 0.1f && !coll.IsTouchingLayers(ground))
+        {
+            anim.SetBool("failing", true);
+        }
 
         //跳跃转下落
         if (anim.GetBool("jumping"))
@@ -84,10 +95,23 @@ public class PlayerCtrl : MonoBehaviour
                 anim.SetBool("failing", true);
             }
         }
+        //受伤
+        else if (isHurt)
+        {
+            anim.SetBool("hurt", true);
+            anim.SetFloat("running", 0);
+            if (Mathf.Abs(rb.velocity.x) < 0.1f)
+            {
+                anim.SetBool("hurt", false);
+                anim.SetBool("idle", true);
+                isHurt = false;
+                //Debug.LogError(isHurt);
+            }
+        }
         //落地
         else if (coll.IsTouchingLayers(ground))
         {
-            anim.SetBool("failing",false);
+            anim.SetBool("failing", false);
             anim.SetBool("idle", true);
         }
     }
@@ -109,5 +133,26 @@ public class PlayerCtrl : MonoBehaviour
     }
 
 
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Enemy")
+        {
+            if (anim.GetBool("failing"))
+            {
+                Destroy(collision.gameObject);
+                rb.velocity = new Vector2(rb.velocity.x, jumpForce / 2);
+                anim.SetBool("jumping", true);
+            } else if(transform.position.x < collision.transform.position.x)
+            {
+                rb.velocity = new Vector2(-10, rb.velocity.y);
+                isHurt = true;
+            }else if (transform.position.x > collision.transform.position.x)
+            {
+                rb.velocity = new Vector2(10, rb.velocity.y);
+                isHurt = true;
+            }
+        }
+
+    }
 
 }
