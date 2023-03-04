@@ -49,3 +49,12 @@ TagManager:
   - name: Foreground
     uniqueID: 4247635599
     locked: 0
+  - name: Reward
+    uniqueID: 3480179239
+    locked: 0
+  - name: Player
+    uniqueID: 22610039
+    locked: 0
+  - name: Environment
+    uniqueID: 4070360893
+    locked: 0

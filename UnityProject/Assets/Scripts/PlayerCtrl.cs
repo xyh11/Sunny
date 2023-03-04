@@ -1,7 +1,7 @@
 //using System.Collections;
 //using System.Collections.Generic;
 using UnityEngine;
-//using UnityEngine.UI;
+using UnityEngine.UI;
 
 public class PlayerCtrl : MonoBehaviour
 {
@@ -9,7 +9,11 @@ public class PlayerCtrl : MonoBehaviour
     public float jumpForce = 10f;
     public LayerMask ground;//地面
     public Collider2D coll;
+    public Text textCherry;
+    public Text textGems;
 
+    private int cherry = 0;
+    private int gems = 0;
     private Rigidbody2D rb;
     private Animator anim;
 
@@ -20,17 +24,19 @@ public class PlayerCtrl : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         //coll = GetComponent<Collider2D>();
+        textCherry.text = "Cherry:" + cherry.ToString();
+        textGems.text = "Gems:" + gems.ToString();
     }
 
     private void FixedUpdate()
     {
-        Move();
-        SwitchAnim();
+
     }
 
     private void Update()
     {
-
+        Move();
+        SwitchAnim();
 
     }
 
@@ -44,7 +50,7 @@ public class PlayerCtrl : MonoBehaviour
         //角色移动 
         if (moveInput != 0)
         { 
-            rb.velocity = new Vector2(moveInput * moveSpeed * Time.deltaTime, rb.velocity.y);
+            rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
             anim.SetFloat("running",Mathf.Abs(isFaceRight));
         }
         //角色转向
@@ -54,7 +60,7 @@ public class PlayerCtrl : MonoBehaviour
         }
 
         //角色跳跃
-        if (Input.GetButtonDown("Jump"))
+        if (Input.GetButtonDown("Jump") && coll.IsTouchingLayers(ground))
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
             anim.SetBool("jumping", true);
@@ -83,6 +89,22 @@ public class PlayerCtrl : MonoBehaviour
         {
             anim.SetBool("failing",false);
             anim.SetBool("idle", true);
+        }
+    }
+
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.tag == "Cherry")
+        {
+            Destroy(collision.gameObject);
+            cherry += 1;
+            textCherry.text = "Cherry:" + cherry.ToString();
+        } else if (collision.tag == "Gems")
+        {
+            Destroy(collision.gameObject);
+            gems += 1;
+            textGems.text = "Gems:" + gems.ToString();
         }
     }
 
