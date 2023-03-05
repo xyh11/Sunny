@@ -2,6 +2,7 @@
 //using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class PlayerCtrl : MonoBehaviour
 {
@@ -30,16 +31,17 @@ public class PlayerCtrl : MonoBehaviour
 
     private void FixedUpdate()
     {
-
-    }
-
-    private void Update()
-    {
         if (!isHurt)
         {
             Move();
         }
         SwitchAnim();
+    }
+
+    private void Update()
+    {
+        Jump();
+
     }
 
     /// <summary>
@@ -61,13 +63,16 @@ public class PlayerCtrl : MonoBehaviour
             transform.localScale = new Vector3(isFaceRight, 1,1);
         }
 
+    }
+
+    void Jump() 
+    {
         //角色跳跃
-        if (Input.GetButtonDown("Jump") && coll.IsTouchingLayers(ground))
+        if (Input.GetButton("Jump") && coll.IsTouchingLayers(ground))
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
             anim.SetBool("jumping", true);
         }
-
     }
 
     /// <summary>
@@ -79,7 +84,7 @@ public class PlayerCtrl : MonoBehaviour
         //Debug.LogWarning(anim.GetBool("ilde"));
 
 
-        anim.SetBool("idle", false);
+        //anim.SetBool("idle", false);
         //下落
         if (rb.velocity.y < 0.1f && !coll.IsTouchingLayers(ground))
         {
@@ -103,7 +108,7 @@ public class PlayerCtrl : MonoBehaviour
             if (Mathf.Abs(rb.velocity.x) < 0.1f)
             {
                 anim.SetBool("hurt", false);
-                anim.SetBool("idle", true);
+                //anim.SetBool("idle", true);
                 isHurt = false;
                 //Debug.LogError(isHurt);
             }
@@ -116,7 +121,10 @@ public class PlayerCtrl : MonoBehaviour
         }
     }
 
-
+    /// <summary>
+    /// 收集物品
+    /// </summary>
+    /// <param name="collision"></param>
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.tag == "Cherry")
@@ -130,16 +138,25 @@ public class PlayerCtrl : MonoBehaviour
             gems += 1;
             textGems.text = "Gems:" + gems.ToString();
         }
+        if (collision.tag == "DeadLine") 
+        {
+            Invoke("Restart", 1f);
+        }
     }
 
-
+    /// <summary>
+    /// 消灭敌人
+    /// </summary>
+    /// <param name="collision"></param>
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.tag == "Enemy")
         {
+            Enemy enemy = collision.gameObject.GetComponent<Enemy>();
             if (anim.GetBool("failing"))
             {
-                Destroy(collision.gameObject);
+                //Destroy(collision.gameObject);
+                enemy.JumpOn();
                 rb.velocity = new Vector2(rb.velocity.x, jumpForce / 2);
                 anim.SetBool("jumping", true);
             } else if(transform.position.x < collision.transform.position.x)
@@ -152,7 +169,11 @@ public class PlayerCtrl : MonoBehaviour
                 isHurt = true;
             }
         }
-
+        
+    }
+    void Restart()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
 }
